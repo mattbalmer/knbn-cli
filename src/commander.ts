@@ -21,6 +21,7 @@ import { attachUpdateSprint } from './commands/update-sprint';
 import { attachRemoveSprint } from './commands/remove-sprint';
 import { attachMigrate } from './commands/migrate';
 import { KNBN_CORE_VERSION } from 'knbn-core/constants/index';
+import { attachGetBoard } from './commands/get-board';
 
 const program = new Command();
 
@@ -35,6 +36,7 @@ export function setupCommander(): Command {
   // Board Commands
   attachListBoards(program);
   attachCreateBoard(program);
+  attachGetBoard(program);
   // Task Commands
   attachGetTask(program);
   attachListTasks(program);

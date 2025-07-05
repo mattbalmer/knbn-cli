@@ -9,7 +9,6 @@ export const attachListTasks = (program: Command) =>
     .option('-f, --file <path>', 'Specify a board file to use')
     .option('-q, --query <query>', 'Search query to filter tasks')
     .option('-c, --column <column>', 'Filter by column')
-    .option('-l, --label <label>', 'Filter by label')
     .option('-s, --sprint <sprint>', 'Filter by sprint')
     .option('-p, --priority <priority>', 'Filter by priority (number)')
     .option('--skip-prompt', 'Skip prompts for board creation', false)
@@ -17,7 +16,6 @@ export const attachListTasks = (program: Command) =>
       file?: string;
       query?: string;
       column?: string;
-      label?: string;
       sprint?: string;
       priority?: string;
       skipPrompt?: boolean;
@@ -30,9 +28,6 @@ export const attachListTasks = (program: Command) =>
         // Apply additional filters
         if (options.column) {
           tasks = tasks.filter(task => task.column === options.column);
-        }
-        if (options.label) {
-          tasks = tasks.filter(task => task.labels?.includes(options.label!));
         }
         if (options.sprint) {
           tasks = tasks.filter(task => task.sprint === options.sprint);

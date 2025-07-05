@@ -1,6 +1,6 @@
 {
   "name": "knbn-cli",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "CLI interface for knbn, a simple kanban tool",
   "author": "Matthew Balmer <contact@mattbalmer.com>",
   "files": [
