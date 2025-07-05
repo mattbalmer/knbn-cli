@@ -251,6 +251,62 @@ describe('CLI Integration Tests', () => {
       expect(result.stdout).toEqual('');
       expect(result.stderr).toContain('Failed to create task');
     });
+
+    it('should create a task with custom column', () => {
+      const result = runCLI(['create-task', 'Task with custom column', '--column', 'todo', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created task #1: Task with custom column');
+      expect(result.stdout).toContain('Column: todo');
+      
+      // Verify task was created in the specified column
+      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
+      expect(board.tasks[1].column).toBe('todo');
+    });
+
+    it('should create a task with description', () => {
+      const result = runCLI(['create-task', 'Task with description', '--description', 'This is a detailed description', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created task #1: Task with description');
+      
+      // Verify task was created with description
+      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
+      expect(board.tasks[1].description).toBe('This is a detailed description');
+    });
+
+    it('should create a task with priority', () => {
+      const result = runCLI(['create-task', 'Task with priority', '--priority', '3', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created task #1: Task with priority');
+      
+      // Verify task was created with priority
+      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
+      expect(board.tasks[1].priority).toBe(3);
+    });
+
+    it('should create a task with all options combined', () => {
+      const result = runCLI([
+        'create-task', 'Complete task',
+        '--column', 'working',
+        '--description', 'A task with all options set',
+        '--priority', '5',
+        '-f', 'test-board.knbn'
+      ]);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created task #1: Complete task');
+      expect(result.stdout).toContain('Column: working');
+      
+      // Verify all options were set correctly
+      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
+      const task = board.tasks[1];
+      expect(task.title).toBe('Complete task');
+      expect(task.column).toBe('working');
+      expect(task.description).toBe('A task with all options set');
+      expect(task.priority).toBe(5);
+    });
   });
 
   describe('update-task command', () => {
