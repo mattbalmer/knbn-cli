@@ -1,0 +1,43 @@
+{
+  "name": "knbn-cli",
+  "version": "0.3.0",
+  "description": "CLI interface for knbn, a simple kanban tool",
+  "author": "Matthew Balmer <contact@mattbalmer.com>",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mattbalmer/knbn"
+  },
+  "bin": "dist/index.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "knbn",
+    "kanban",
+    "cli",
+    "typescript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^14.0.0",
+    "js-yaml": "^4.1.0",
+    "knbn-core": "^0.3.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.5.0",
+    "jest": "^30.0.3",
+    "ts-brand": "^0.2.0",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  },
+  "packageManager": "yarn@4.9.2"
+}
