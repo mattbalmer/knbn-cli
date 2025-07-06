@@ -36,6 +36,14 @@ export const attachListColumns = (program: Command) =>
           
           console.log('');
         });
+
+        // count tasks without a column
+        if (options.count) {
+          // @ts-ignore
+          const unassignedTasks = ColumnActions.getTasksInColumn(boardFile, undefined);
+          console.log(`Backlog: ${unassignedTasks.length}`);
+        }
+
       } catch (error) {
         console.error(`Failed to list columns: ${error}`);
         process.exit(1);

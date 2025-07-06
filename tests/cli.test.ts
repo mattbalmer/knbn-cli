@@ -102,11 +102,10 @@ describe('CLI Integration Tests', () => {
       const board = loadBoard(boardPath);
       expect(board.name).toBe('My Board');
       expect(board.description).toBe('My local kanban board');
-      expect(board.columns).toHaveLength(4);
-      expect(board.columns[0].name).toBe('backlog');
-      expect(board.columns[1].name).toBe('todo');
-      expect(board.columns[2].name).toBe('working');
-      expect(board.columns[3].name).toBe('done');
+      expect(board.columns).toHaveLength(3);
+      expect(board.columns[0].name).toBe('todo');
+      expect(board.columns[1].name).toBe('working');
+      expect(board.columns[2].name).toBe('done');
       expect(board.metadata.nextId).toBe(1);
       expect(Object.keys(board.tasks)).toHaveLength(0);
     });
@@ -175,13 +174,11 @@ describe('CLI Integration Tests', () => {
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Created task #1: My Test Task');
-      expect(result.stdout).toContain('Column: backlog');
-      
+
       // Verify task was actually created in the board file
       const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
       expect(board.tasks[1]).toBeDefined();
       expect(board.tasks[1].title).toBe('My Test Task');
-      expect(board.tasks[1].column).toBe('backlog');
       expect(board.metadata.nextId).toBe(2);
     });
 
@@ -321,8 +318,7 @@ describe('CLI Integration Tests', () => {
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Updated task #1: Updated title');
-      expect(result.stdout).toContain('Column: backlog');
-      
+
       // Verify update in board file
       const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
       expect(board.tasks[1].title).toBe('Updated title');
@@ -558,7 +554,6 @@ describe('CLI Integration Tests', () => {
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Task #1: Test Task');
-      expect(result.stdout).toContain('Column: backlog');
       expect(result.stdout).toContain('Created:');
       expect(result.stdout).toContain('Updated:');
     });
@@ -581,6 +576,9 @@ describe('CLI Integration Tests', () => {
   describe('list-tasks command', () => {
     beforeEach(() => {
       runCLI(['create-board', 'test-board']);
+      runCLI(['add-label', 'bug', '-f', 'test-board.knbn']);
+      runCLI(['add-label', 'feature', '-f', 'test-board.knbn']);
+      runCLI(['add-label', 'urgent', '-f', 'test-board.knbn']);
       runCLI(['create-task', 'Task 1', '-f', 'test-board.knbn']);
       runCLI(['create-task', 'Task 2', '-f', 'test-board.knbn']);
       runCLI(['update-task', '2', '--column', 'todo', '-f', 'test-board.knbn']);
@@ -612,6 +610,72 @@ describe('CLI Integration Tests', () => {
       expect(result.stdout).not.toContain('#2: Task 2');
     });
 
+    it('should filter tasks by label', () => {
+      // First add labels to tasks
+      runCLI(['update-task', '1', '--labels', 'bug,urgent', '-f', 'test-board.knbn']);
+      runCLI(['update-task', '2', '--labels', 'feature', '-f', 'test-board.knbn']);
+      
+      const result = runCLI(['list-tasks', '--label', 'bug', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 1 task(s)');
+      expect(result.stdout).toContain('#1: Task 1');
+      expect(result.stdout).not.toContain('#2: Task 2');
+    });
+
+    it('should filter tasks by different label', () => {
+      // First add labels to tasks
+      runCLI(['update-task', '1', '--labels', 'bug,urgent', '-f', 'test-board.knbn']);
+      runCLI(['update-task', '2', '--labels', 'feature', '-f', 'test-board.knbn']);
+      
+      const result = runCLI(['list-tasks', '--label', 'feature', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 1 task(s)');
+      expect(result.stdout).toContain('#2: Task 2');
+      expect(result.stdout).not.toContain('#1: Task 1');
+    });
+
+    it('should filter tasks by label when task has multiple labels', () => {
+      // First add labels to tasks
+      runCLI(['update-task', '1', '--labels', 'bug,urgent', '-f', 'test-board.knbn']);
+      runCLI(['update-task', '2', '--labels', 'feature', '-f', 'test-board.knbn']);
+      
+      const result = runCLI(['list-tasks', '--label', 'urgent', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 1 task(s)');
+      expect(result.stdout).toContain('#1: Task 1');
+      expect(result.stdout).not.toContain('#2: Task 2');
+    });
+
+    it('should show no tasks found when filtering by non-existent label', () => {
+      const result = runCLI(['list-tasks', '--label', 'nonexistent', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No tasks found');
+    });
+
+    it('should show no tasks found when filtering by label but no tasks have labels', () => {
+      const result = runCLI(['list-tasks', '--label', 'bug', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No tasks found');
+    });
+
+    it('should combine label filter with other filters', () => {
+      // First add labels to tasks
+      runCLI(['update-task', '1', '--labels', 'bug,urgent', '-f', 'test-board.knbn']);
+      runCLI(['update-task', '2', '--labels', 'feature', '--column', 'todo', '-f', 'test-board.knbn']);
+      
+      const result = runCLI(['list-tasks', '--label', 'feature', '--column', 'todo', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 1 task(s)');
+      expect(result.stdout).toContain('#2: Task 2');
+      expect(result.stdout).not.toContain('#1: Task 1');
+    });
+
     it('should show no tasks found message', () => {
       const result = runCLI(['list-tasks', '--column', 'nonexistent', '-f', 'test-board.knbn']);
       
@@ -630,19 +694,18 @@ describe('CLI Integration Tests', () => {
       const result = runCLI(['list-columns', '-f', 'test-board.knbn']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Found 4 column(s)');
-      expect(result.stdout).toContain('1. backlog');
-      expect(result.stdout).toContain('2. todo');
-      expect(result.stdout).toContain('3. working');
-      expect(result.stdout).toContain('4. done');
+      expect(result.stdout).toContain('Found 3 column(s)');
+      expect(result.stdout).toContain('1. todo');
+      expect(result.stdout).toContain('2. working');
+      expect(result.stdout).toContain('3. done');
     });
 
     it('should show task counts when --count flag is used', () => {
       const result = runCLI(['list-columns', '--count', '-f', 'test-board.knbn']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Tasks: 1'); // backlog has 1 task
       expect(result.stdout).toContain('Tasks: 0'); // other columns have 0 tasks
+      expect(result.stdout).toContain('Backlog: 1'); // backlog has 1 task
     });
   });
 
@@ -671,10 +734,10 @@ describe('CLI Integration Tests', () => {
     });
 
     it('should fail with duplicate column name', () => {
-      const result = runCLI(['create-column', 'backlog', '-f', 'test-board.knbn']);
+      const result = runCLI(['create-column', 'todo', '-f', 'test-board.knbn']);
       
       expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('Column with name "backlog" already exists');
+      expect(result.stderr).toContain('Column with name "todo" already exists');
     });
 
     it('should fail with invalid position', () => {
@@ -691,11 +754,11 @@ describe('CLI Integration Tests', () => {
     });
 
     it('should update column name', () => {
-      const result = runCLI(['update-column', 'backlog', '--name', 'new-backlog', '-f', 'test-board.knbn']);
+      const result = runCLI(['update-column', 'todo', '--name', 'new-todo', '-f', 'test-board.knbn']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Updated column: new-backlog');
-      expect(result.stdout).toContain('Renamed from: backlog');
+      expect(result.stdout).toContain('Updated column: new-todo');
+      expect(result.stdout).toContain('Renamed from: todo');
     });
 
     it('should fail with non-existent column', () => {
@@ -727,12 +790,12 @@ describe('CLI Integration Tests', () => {
     });
 
     it('should fail to remove column with tasks', () => {
-      runCLI(['create-task', 'Test Task', '-f', 'test-board.knbn']); // Goes to backlog
+      runCLI(['create-task', 'Test Task', '--column', 'todo', '-f', 'test-board.knbn']); // Goes to backlog
       
-      const result = runCLI(['remove-column', 'backlog', '-f', 'test-board.knbn']);
+      const result = runCLI(['remove-column', 'todo', '-f', 'test-board.knbn']);
       
       expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('Cannot remove column "backlog" because it contains 1 task(s)');
+      expect(result.stderr).toContain('Cannot remove column "todo" because it contains 1 task(s)');
     });
 
     it('should show message for non-existent column', () => {

@@ -12,6 +12,7 @@ export const attachUpdateTask = (program: Command) =>
     .option('--column <column>', 'Update the task column')
     .option('--description <text>', 'Update the task description')
     .option('--priority <number>', 'Update the task priority')
+    .option('--labels <text>', 'Update the task labels (comma-separated)')
     .action(async (taskId, options) => {
       const boardFile = await ensureBoardFile(options.file, true);
 
@@ -24,9 +25,10 @@ export const attachUpdateTask = (program: Command) =>
       try {
         const updates: Partial<Task> = {};
         if (options.title) updates.title = options.title;
-        if (options.column) updates.column = options.column;
-        if (options.description) updates.description = options.description;
-        if (options.priority) {
+        if (options.hasOwnProperty('column')) updates.column = options.column;
+        if (options.hasOwnProperty('description')) updates.description = options.description;
+        if (options.hasOwnProperty('labels')) updates.labels = options.labels.split(',').map((label: string) => label.trim());
+        if (options.hasOwnProperty('priority')) {
           const priority = parseInt(options.priority, 10);
           if (!isNaN(priority)) {
             updates.priority = priority;
@@ -46,7 +48,9 @@ export const attachUpdateTask = (program: Command) =>
         }
 
         console.log(`Updated task #${task.id}: ${task.title}`);
-        console.log(`Column: ${task.column}`);
+        if (task.column) {
+          console.log(`Column: ${task.column}`);
+        }
       } catch (error) {
         console.error(`Failed to update task: ${error}`);
         process.exit(1);

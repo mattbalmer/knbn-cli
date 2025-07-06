@@ -1,6 +1,6 @@
 {
   "name": "knbn-cli",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "CLI interface for knbn, a simple kanban tool",
   "author": "Matthew Balmer <contact@mattbalmer.com>",
   "files": [
@@ -27,7 +27,7 @@
   "dependencies": {
     "commander": "^14.0.0",
     "js-yaml": "^4.1.0",
-    "knbn-core": "^0.3.3"
+    "knbn-core": "^0.4.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

@@ -7,9 +7,10 @@ export const attachListTasks = (program: Command) =>
     .command('list-tasks')
     .description('List tasks with optional filtering')
     .option('-f, --file <path>', 'Specify a board file to use')
-    .option('-q, --query <query>', 'Search query to filter tasks')
+    .option('-q, --query <query>', 'Search query for title and description')
     .option('-c, --column <column>', 'Filter by column')
     .option('-s, --sprint <sprint>', 'Filter by sprint')
+    .option('-l, --label <sprint>', 'Filter by sprint')
     .option('-p, --priority <priority>', 'Filter by priority (number)')
     .option('--skip-prompt', 'Skip prompts for board creation', false)
     .action(async (options: {
@@ -17,6 +18,7 @@ export const attachListTasks = (program: Command) =>
       query?: string;
       column?: string;
       sprint?: string;
+      label?: string;
       priority?: string;
       skipPrompt?: boolean;
     }) => {
@@ -31,6 +33,9 @@ export const attachListTasks = (program: Command) =>
         }
         if (options.sprint) {
           tasks = tasks.filter(task => task.sprint === options.sprint);
+        }
+        if (options.label) {
+          tasks = tasks.filter(task => task.labels?.some(l => l === options.label));
         }
         if (options.priority) {
           const priority = parseInt(options.priority);

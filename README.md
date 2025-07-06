@@ -11,28 +11,9 @@ For basic CLI usage, run via npx:
 ```bash
 npx knbn-cli
 ```
-
-## Web Interface
-
-If you plan to use the web interface, install the separate `knbn-web` package:
+or install globally:
 
 ```bash
-npx knbn-web
-# or
-npm i -g knbn-web
-knbn-web 
+npm i -g knbn-cli
+knbn-cli
 ```
-
-Then use either `knbn-web` or `knbn-cli serve` to start the web server.
-You can specify a custom port with the `-p` option:
-
-```bash
-knbn-web -p 8080
-```
-
-## Features
-
-- Command-line kanban board management
-- Task and board operations
-- Board data stored in `.knbn` files
-- Lightweight CLI with optional web interface (`knbn-web` or `knbn-cli serve`)
